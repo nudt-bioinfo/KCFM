@@ -16,7 +16,7 @@
 * [Citing KCellFM](#citing-kcellfm)
 
 ## Introduction
-![Overview of the KCellFM framework](fig1.png)
+![Overview of the KCellFM framework](./KCellFM-main/fig1.png)
 
 This is the official codebase for **KCellFM: A Knowledge-Guided Foundation Model for Cell Type Annotation in Single-Cell Data**
 
