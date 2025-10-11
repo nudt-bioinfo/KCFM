@@ -117,8 +117,8 @@ with each containing only approximately 50 genes, simulating data-scarce conditi
 Fine-tune the KCellFM model using the CL_cross dataset, and then test the performance of the fine-tuned model on the test set.
 
 ```angular2html
-python ./空转/run_train_CL_cross.py
-python ./空转/run_test.py
+python ./spatial_transcriptomics/run_train_CL_cross.py
+python ./spatial_transcriptomics/run_test.py
 ```
 
 **CL_intra**
@@ -126,8 +126,8 @@ python ./空转/run_test.py
 Fine-tune the KCellFM model using the CL_intra dataset, and then test the performance of the fine-tuned model on the test set.
 
 ```angular2html
-python ./空转/run_train_CL_intra.py
-python ./空转/run_test.py
+python ./spatial_transcriptomics/run_train_CL_intra.py
+python ./spatial_transcriptomics/run_test.py
 ```
 
 **SB_cross**
@@ -135,8 +135,8 @@ python ./空转/run_test.py
 Fine-tune the KCellFM model using the SB_cross dataset, and then test the performance of the fine-tuned model on the test set.
 
 ```angular2html
-python ./空转/run_train_SB_cross.py
-python ./空转/run_test.py
+python ./spatial_transcriptomics/run_train_SB_cross.py
+python ./spatial_transcriptomics/run_test.py
 ```
 
 **SB_intra**
@@ -144,8 +144,8 @@ python ./空转/run_test.py
 Fine-tune the KCellFM model using the SB_intra dataset, and then test the performance of the fine-tuned model on the test set.
 
 ```angular2html
-python ./空转/run_train_SB_intra.py
-python ./空转/run_test.py
+python ./spatial_transcriptomics/run_train_SB_intra.py
+python ./spatial_transcriptomics/run_test.py
 ```
 
 **Cell Cycle Analysis**
@@ -164,9 +164,6 @@ python ./gene_pretubation/GEARS/gears/train.py
 ## Contributing
 
 ## Acknoledgements
-
-This study has been supported by xxx and the National Natural Science Foundation of China Youth Program (62402071).
-
 
 ## Citing KCellFM
 
