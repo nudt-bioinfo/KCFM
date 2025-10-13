@@ -16,9 +16,9 @@
 * [Citing KCellFM](#citing-kcellfm)
 
 ## Introduction
-![Overview of the KCellFM framework](./KCellFM-main/fig1.png)
+![Overview of the KCellFM framework](./workflow.png)
 
-This is the official codebase for **KCellFM: A Knowledge-Guided Foundation Model for Cell Type Annotation in Single-Cell Data**
+This is the official codebase for **KCellFM: A Knowledge-Graph–Informed Foundation Model for Single-Cell Annotation**
 
 Single-cell sequencing has revolutionized our ability to chart cellular heterogeneity and link cell identities to health 
 and disease. However, accurate cell type classification remains a major challenge, as existing approaches fail to fully harness
@@ -64,7 +64,7 @@ relationships among cell types based on established cell ontologies (Fig. 1a). T
 encapsulating natural hierarchical and functional connections across cell types. We then fine-tune a PubMedBERT model using
 these relational structures, generating type embeddings that are inherently enriched with ontological knowledge.
 
-Run the following command in the **/KCellFM-main/PubMedbert/** directory.
+Run the following command in the **./PubMedbert/** directory.
 ```bash
 python fine_tune_PubMedbert_model.py
 ```
@@ -77,7 +77,7 @@ data and accurately annotating cell types remains challenging. Most existing met
 overlooking structured biological knowledge of cell type relationships. To address this, we introduce KCellFM, a novel multi-stage 
 knowledge-guided framework that integrates prior biological knowledge into a foundational model for single-cell analysis.
 
-Run the following command in the **/KCellFM-main/src/** directory to pretrain KCellFM model.
+Run the following command in the **/src/** directory to pretrain KCellFM model.
 
 ```bash
 python train_mam.py
