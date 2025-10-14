@@ -64,12 +64,6 @@ relationships among cell types based on established cell ontologies (Fig. 1a). T
 encapsulating natural hierarchical and functional connections across cell types. We then fine-tune a PubMedBERT model using
 these relational structures, generating type embeddings that are inherently enriched with ontological knowledge.
 
-Run the following command in the **./PubMedbert/** directory.
-```bash
-python fine_tune_PubMedbert_model.py
-```
-After running the command, the fine tuned PubMedBERT model can be obtained.
-
 ### Pretrained KCellFM model
 
 Single-cell sequencing has revolutionized understanding of cellular heterogeneity, but effectively interpreting its massive 
@@ -77,12 +71,7 @@ data and accurately annotating cell types remains challenging. Most existing met
 overlooking structured biological knowledge of cell type relationships. To address this, we introduce KCellFM, a novel multi-stage 
 knowledge-guided framework that integrates prior biological knowledge into a foundational model for single-cell analysis.
 
-Run the following command in the **/src/** directory to pretrain KCellFM model.
-
-```bash
-python train_mam.py
-```
-After running this command, pretrained KCellFM model (e.g. **cell_cls_3loss_6layer_final.pth**) can be obtained.
+KCellFM model (e.g. **cell_cls_3loss_6layer_final.pth**) can be obtained.
 
 ### Downstream task
 KCellFM, a knowledge-guided foundational model designed to enhance single-cell data analysis by integrating structured biological 
