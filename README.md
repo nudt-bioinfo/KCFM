@@ -32,8 +32,6 @@ across diverse tasks, including precise annotation of cells within large cell at
 in cancer patients, discovery of novel cell populations, and accurate annotation in spatial transcriptomics. In addition, 
 it enhances modeling of perturbation responses, further extending its utility beyond static annotation.
 
-**Keywords:** Single-cell foundation model, Single-cell data analysis, Single-cell atlas, Cell type annotation, Cell ontology
-
 ## Updates
 * **October 1, 2025:** KCFM code realeased!
 
@@ -54,6 +52,9 @@ it enhances modeling of perturbation responses, further extending its utility be
 * matplotlib 3.10.1
 * numpy 1.26.4
 * anndata 0.11.4
+
+## Tutorial
+For the step-by-step tutorial, please refer to: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
 
 ## Usage
 
@@ -150,18 +151,3 @@ python ./cell_cycle_classification/run_cell_cycle_classification.py
 python ./gene_pretubation/GEARS/gears/train.py
 ```
 
-## Contributing
-
-## Acknoledgements
-
-## Citing KCFM
-
-```bibtex
-@article{
-title={KCFM: A Knowledge-Guided Foundation Model for Cell Type Annotation in Single-Cell Data},
-author={},
-journal={Nature Machine Intelligence},
-year={2025},
-publisher={}
-}
-```
