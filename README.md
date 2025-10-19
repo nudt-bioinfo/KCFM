@@ -13,6 +13,8 @@ pip install -r requirements.txt
 
 ## Tutorial
 
+For the step-by-step tutorial, please refer to: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
+
 ### Knowledge-Enhanced PubMedBERT Fine-tuning
 We leverage the Cell Ontology (CO) hierarchy to construct a structured knowledge graph (Fig. 1a), capturing ontological relationships between cell types (Fig. 1c). This graph informs our fine-tuning of PubMedBERT, producing cell type embeddings that intrinsically encode biological relationships.
 
@@ -27,12 +29,14 @@ Our pretrained model (`cell_cls_3loss_6layer_final.pth`) integrates:
 **We evaluated KCFM across four key scenarios:**
 
 #### fine-grained cell type annotation
+For the downstream task of fine-grained cell type annotation, the dataset has been publicly released via the Gene Expression Omnibus (GEO) platform (Accession number: GSE235760). This dataset includes various T cell types, such as naïve CD4+ T cells. It can be accessed through the following link: https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a.
 ```bash
 python ./T_cancer_cell/run_train_T_cancer_cell_classification.py
 python ./T_cancer_cell/run_test_T_cancer_cell_classification.py
 ```
 
 #### novel cell classification
+For the downstream task of novel cell type classification, we have collected two new cell datasets. The dataset can be accessed through the following link: https://github.com/nudt-bioinfo/KCFM/tree/main/data. novel_cell_data1 contains 75 novel cell types and approximately 300,000 cell samples. novel_cell_data2 contains 78 novel cell types and approximately 300,000 cell samples.
 ```bash
 python ./novel_cell_classification_bert/src/run_mamba_novel_cell_classification_difficulty.py
 ```
@@ -54,6 +58,7 @@ python ./spatial_transcriptomics/run_test.py
 ```
 
 #### gene perturbation analysis
+For the downstream task of novel cell type classification, the dataset can be accessed through the following link: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene%20purterbation/data.
 ```angular2html
 python ./gene_pretubation/GEARS/gears/train.py
 ```
