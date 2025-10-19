@@ -32,12 +32,12 @@ python ./T_cancer_cell/run_train_T_cancer_cell_classification.py
 python ./T_cancer_cell/run_test_T_cancer_cell_classification.py
 ```
 
-2 **novel cell classification**
+2. **novel cell classification**
 ```bash
 python ./novel_cell_classification_bert/src/run_mamba_novel_cell_classification_difficulty.py
 ```
 
-3 **spatial transcriptomics analysis under extreme data sparsity**
+3. **spatial transcriptomics analysis under extreme data sparsity**
 Tested under four challenging conditions:
 
 **Cross_tissue analysis**
@@ -52,7 +52,7 @@ python ./spatial_transcriptomics/run_train_{CL|SB}_intra.py
 python ./spatial_transcriptomics/run_test.py
 ```
 
-4 **gene perturbation analysis**
+4. **gene perturbation analysis**
 
 ```angular2html
 python ./gene_pretubation/GEARS/gears/train.py
