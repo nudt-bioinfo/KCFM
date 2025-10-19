@@ -3,3 +3,5 @@
 *.bin filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.h5ad filter=lfs diff=lfs merge=lfs -text
+novel_cell_data1.zip filter=lfs diff=lfs merge=lfs -text
+novel_cell_data2.zip filter=lfs diff=lfs merge=lfs -text
