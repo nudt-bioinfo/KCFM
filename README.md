@@ -1,57 +1,14 @@
-# KCFM
+**KCFM: A Knowledge-Graph–Informed Foundation Model for Single-Cell Annotation**
 
-* [Introduction](#introduction)
-* [Updates](#updates)
-* [Installation](#installationenvironment-configuration)
-* [Usage](#usage)
-  * [Fine-tune a PubMedBERT model](#fine-tune-a-pubmedbert-model) 
-  * [Pretrained KCFM model](#pretrained-KCFM-model)
-  * [Downstream task](#downstream-task)
-    * [fine-grained cell type annotation](#fine-grained-cell-type-annotation)
-    * [novel cell classification](#novel-cell-classification)
-    * [spatial transcriptomics analysis under extreme data sparsity](#spatial-transcriptomics-analysis-under-extreme-data-sparsity)
-    * [gene perturbation analysis](#gene-perturbation-analysis)
-* [Contributing](#contributing)
-* [Acknownledgements](#acknoledgements)
-* [Citing KCFM](#citing-KCFM)
+## Overview
+KCFM is a novel framework that integrates biological knowledge from cell ontologies with single-cell sequencing data to improve cell type classification. By combining gene expression profiles with structured biological knowledge, KCFM achieves state-of-the-art performance across multiple analysis tasks.
+![KCFM framework](./workflow.png)
 
-## Introduction
-![Overview of the KCFM framework](./workflow.png)
-
-This is the official codebase for **KCFM: A Knowledge-Graph–Informed Foundation Model for Single-Cell Annotation**
-
-Single-cell sequencing has revolutionized our ability to chart cellular heterogeneity and link cell identities to health 
-and disease. However, accurate cell type classification remains a major challenge, as existing approaches fail to fully harness
-the scale of available data and rarely integrate structured biological knowledge. Current foundation models, while powerful, 
-still rely primarily on raw expression profiles and overlook the semantics of cell identity. Here we present KCFM, a
-cell ontology–guided foundation model that couples large-scale expression learning with structured biological priors. By 
-embedding the hierarchical knowledge of the Cell Ontology into model training, KCFM establishes a principled alignment 
-between expression-derived representations and biologically meaningful cell types. This design moves beyond purely data-driven 
-annotation, yielding a model that is both interpretable and broadly generalizable. KCFM demonstrates state-of-the-art accuracy 
-across diverse tasks, including precise annotation of cells within large cell atlas datasets, resolution of fine-grained subpopulations 
-in cancer patients, discovery of novel cell populations, and accurate annotation in spatial transcriptomics. In addition, 
-it enhances modeling of perturbation responses, further extending its utility beyond static annotation.
-
-## Updates
+## Quick Start
 * **October 1, 2025:** KCFM code realeased!
-
-## Installation(Environment Configuration)
-* python 3.10.16
-* pytorch 2.2.0
-* pytorch-cuda 12.1
-* tensorboard 2.19.0
-* torchvision 0.17.0
-* transformers 4.51.3
-* tokenizers 0.21.1
-* datasets 2.21.0
-* tqdm 4.67.1
-* scanpy 1.11.1
-* scikit-learn 1.5.2
-* scipy 1.15.2
-* pandas 2.2.3
-* matplotlib 3.10.1
-* numpy 1.26.4
-* anndata 0.11.4
+conda create -n kcfm python=3.10
+conda activate kcfm
+pip install -r requirements.txt
 
 ## Tutorial
 For the step-by-step tutorial, please refer to: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
