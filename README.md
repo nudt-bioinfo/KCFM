@@ -58,7 +58,7 @@ python ./spatial_transcriptomics/run_test.py
 ```
 
 #### gene perturbation analysis
-For the downstream task of novel cell type classification, the dataset can be accessed through the following link: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene%20purterbation/data.
+For the downstream task of gene perturbation analysis, the dataset can be accessed through the following link: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene%20purterbation/data.
 ```angular2html
 python ./gene_pretubation/GEARS/gears/train.py
 ```
