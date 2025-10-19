@@ -1,14 +1,15 @@
-**KCFM: A Knowledge-Graph–Informed Foundation Model for Single-Cell Annotation**
+# KCFM: A Knowledge-Graph–Informed Foundation Model for Single-Cell Annotation**
 
 ## Overview
 KCFM is a novel framework that integrates biological knowledge from cell ontologies with single-cell sequencing data to improve cell type classification. By combining gene expression profiles with structured biological knowledge, KCFM achieves state-of-the-art performance across multiple analysis tasks.
 ![KCFM framework](./workflow.png)
 
 ## Quick Start
-* **October 1, 2025:** KCFM code realeased!
+```bash
 conda create -n kcfm python=3.10
 conda activate kcfm
 pip install -r requirements.txt
+```
 
 ## Tutorial
 For the step-by-step tutorial, please refer to: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
