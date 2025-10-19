@@ -24,7 +24,7 @@ Our pretrained model (`cell_cls_3loss_6layer_final.pth`) integrates:
 - Mamba2-based architecture for efficient processing
 
 ### Benchmark Evaluation
-We evaluated KCFM across four key scenarios:
+**We evaluated KCFM across four key scenarios:**
 
 #### fine-grained cell type annotation
 ```bash
@@ -38,7 +38,8 @@ python ./novel_cell_classification_bert/src/run_mamba_novel_cell_classification_
 ```
 
 #### spatial transcriptomics analysis under extreme data sparsity
-Tested under four challenging conditions:
+We use four carefully designed existing datasets (CL-intra, CL-cross, SB-intra, SB-cross). These datasets cover both intra-tissue and cross-tissue annotation scenarios, 
+with each containing only approximately 50 genes, simulating data-scarce conditions commonly encountered in real studies.
 
 ##### Cross_tissue analysis
 ```angular2html
