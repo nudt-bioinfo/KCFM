@@ -28,7 +28,7 @@ Our pretrained model (`cell_cls_3loss_6layer_final.pth`) integrates:
 ### Benchmark Evaluation
 **We evaluated KCFM across four key scenarios:**
 
-#### fine-grained cell type annotation
+#### accurate annotation of cells within large-scale atlases
 For the downstream task of fine-grained cell type annotation, the dataset has been publicly released via the Gene Expression Omnibus (GEO) platform (Accession number: GSE235760). This dataset includes various T cell types, such as naïve CD4+ T cells. It can be accessed through the following link: https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a.
 ```bash
 python ./T_cancer_cell/run_train_T_cancer_cell_classification.py
