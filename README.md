@@ -14,7 +14,11 @@ pip install -r requirements.txt
 ## Tutorial
 
 For the step-by-step tutorial, please refer to: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
-
+annotation of cells within large-scale atlases:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/T_cancer_cell
+annotation of fine-grained cellular subpopulations in cancer samples:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
+novel cell classification:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
+spatial transcriptomics analysis under extreme data sparsity:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
+gene perturbation analysis:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial
 ### Knowledge-Enhanced PubMedBERT Fine-tuning
 We leverage the Cell Ontology (CO) hierarchy to construct a structured knowledge graph (Fig. 1a), capturing ontological relationships between cell types (Fig. 1c). This graph informs our fine-tuning of PubMedBERT, producing cell type embeddings that intrinsically encode biological relationships.
 
@@ -26,9 +30,12 @@ Our pretrained model (`cell_cls_3loss_6layer_final.pth`) integrates:
 - Mamba2-based architecture for efficient processing
 
 ### Benchmark Evaluation
-**We evaluated KCFM across four key scenarios:**
+**We evaluated KCFM across five key scenarios:**
 
 #### accurate annotation of cells within large-scale atlases
+
+
+#### annotation of fine-grained cellular subpopulations in cancer samples
 For the downstream task of fine-grained cell type annotation, the dataset has been publicly released via the Gene Expression Omnibus (GEO) platform (Accession number: GSE235760). This dataset includes various T cell types, such as naïve CD4+ T cells. It can be accessed through the following link: https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a.
 ```bash
 python ./T_cancer_cell/run_train_T_cancer_cell_classification.py
