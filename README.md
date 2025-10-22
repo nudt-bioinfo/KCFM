@@ -13,15 +13,16 @@ pip install -r requirements.txt
 
 ## Tutorial
 
-​Step-by-step tutorials for KCFM are available at: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial.​​
-Key tutorials include:
-annotation of cells within large-scale atlases:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/cell_atlases
+​Step-by-step tutorials for KCFM are available at: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial.​​  
 
-annotation of fine-grained cellular subpopulations in cancer samples:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/T_cancer_cell
+Key tutorials include:    
+annotation of cells within large-scale atlases:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/cell_atlases  
 
-novel cell classification:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/novel_cell_classification/bert
+annotation of fine-grained cellular subpopulations in cancer samples:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/T_cancer_cell  
 
-spatial transcriptomics analysis under extreme data sparsity:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/spatial transcriptomics
+novel cell classification:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/novel_cell_classification/bert  
+
+spatial transcriptomics analysis under extreme data sparsity:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/spatial transcriptomics  
 
 gene perturbation analysis:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene_purterbation
 ### Knowledge-Enhanced PubMedBERT Fine-tuning
