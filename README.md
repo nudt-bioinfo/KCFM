@@ -48,7 +48,7 @@ python ./novel_cell_classification_bert/src/run_mamba_novel_cell_classification_
 
 #### spatial transcriptomics analysis under extreme data sparsity
 We use four carefully designed existing datasets (CL-intra, CL-cross, SB-intra, SB-cross). These datasets cover both intra-tissue and cross-tissue annotation scenarios, 
-with each containing only approximately 50 genes, simulating data-scarce conditions commonly encountered in real studies.
+with each containing only approximately 50 genes, simulating data-scarce conditions commonly encountered in real studies[sptial_transciptomics](https://github.com/nudt-bioinfo/KCFM/blob/main/data/spatial_transcriptomics.zip).
 
 ##### Cross_tissue analysis
 ```angular2html
