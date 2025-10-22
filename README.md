@@ -24,15 +24,11 @@ Our pretrained model (`cell_cls_3loss_6layer_final.pth`) integrates:
 ### Benchmark Evaluation
 We evaluated KCFM across five key scenarios,step-by-step tutorials are available at:    
 
-annotation of cells within large-scale atlases:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/cell_atlases  
-
-annotation of fine-grained cellular subpopulations in cancer samples:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/T_cancer_cell  
-
-novel cell classification:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/novel_cell_classification/bert  
-
-spatial transcriptomics analysis under extreme data sparsity:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/spatial transcriptomics  
-
-gene perturbation analysis:https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene_purterbation
+- [annotation of cells within large-scale atlases](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/cell_atlases)
+- [annotation of fine-grained cellular subpopulations in cancer samples](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/T_cancer_cell)
+- [novel cell classification](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/novel_cell_classification/bert)
+- [spatial transcriptomics analysis under extreme data sparsity](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/spatial%20transcriptomics)
+- [gene perturbation analysis](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene_purterbation)
 
 #### accurate annotation of cells within large-scale atlases
 
