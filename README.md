@@ -34,14 +34,14 @@ We evaluated KCFM across five key scenarios,step-by-step tutorials are available
 
 
 #### annotation of fine-grained cellular subpopulations in cancer samples
-For the downstream task of fine-grained cell type annotation, the dataset has been publicly released via the Gene Expression Omnibus (GEO) platform (Accession number: GSE235760). This dataset includes various T cell types, such as naïve CD4+ T cells. It can be accessed through the following link: https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a.
+For the downstream task of fine-grained cell type annotation, the dataset has been publicly released via the Gene Expression Omnibus (GEO) platform (Accession number: GSE235760). This dataset includes various T cell types, such as naïve CD4+ T cells. It can be accessed through the following link: [T_cell](https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a).
 ```bash
 python ./T_cancer_cell/run_train_T_cancer_cell_classification.py
 python ./T_cancer_cell/run_test_T_cancer_cell_classification.py
 ```
 
 #### novel cell classification
-For the downstream task of novel cell type classification, we have collected two new cell datasets. The dataset can be accessed through the following link: https://github.com/nudt-bioinfo/KCFM/tree/main/data. novel_cell_data1 contains 75 novel cell types and approximately 300,000 cell samples. novel_cell_data2 contains 78 novel cell types and approximately 300,000 cell samples.
+For the downstream task of novel cell type classification, we have collected two new cell datasets. The dataset can be accessed through the following link: [novel_cell](https://github.com/nudt-bioinfo/KCFM/tree/main/data). novel_cell_data1 contains 75 novel cell types and approximately 300,000 cell samples. novel_cell_data2 contains 78 novel cell types and approximately 300,000 cell samples.
 ```bash
 python ./novel_cell_classification_bert/src/run_mamba_novel_cell_classification_difficulty.py
 ```
@@ -63,7 +63,7 @@ python ./spatial_transcriptomics/run_test.py
 ```
 
 #### gene perturbation analysis
-For the downstream task of gene perturbation analysis, the dataset can be accessed through the following link: https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene%20purterbation/data.
+For the downstream task of gene perturbation analysis, the dataset can be accessed through the following link: [gene_perturbation](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene%20purterbation/data).
 ```angular2html
 python ./gene_pretubation/GEARS/gears/train.py
 ```
