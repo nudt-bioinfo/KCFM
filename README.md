@@ -31,8 +31,11 @@ We evaluated KCFM across five key scenarios,step-by-step tutorials are available
 - [gene perturbation analysis](https://github.com/nudt-bioinfo/KCFM/tree/main/KCFM_tutorial/gene_purterbation)
 
 #### accurate annotation of cells within large-scale atlases
-
-
+For this task,We conducted a large-scale independent evaluation using a carefully curated dataset from scTab. This comprehensive benchmark integrates 22 million human cells from the CellXGene database, encompassing 164 distinct cell types, 5,052 donors, and 56 tissues.It can be accessed through the following link: [Cell_atlases]([https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a](https://pklab.med.harvard.edu/felix/578
+data/merlin cxg 2023 05 15 sf-log1p.tar.gz ).
+```bash
+python ./cell_atlases/run_train_T_cancer_cell_classification.py
+```
 #### annotation of fine-grained cellular subpopulations in cancer samples
 For the downstream task of fine-grained cell type annotation, the dataset has been publicly released via the Gene Expression Omnibus (GEO) platform (Accession number: GSE235760). This dataset includes various T cell types, such as naïve CD4+ T cells. It can be accessed through the following link: [T_cell](https://cellxgene.cziscience.com/collections/14dc301f-d4fb-4743-a590-aa88d5f1df1a).
 ```bash
