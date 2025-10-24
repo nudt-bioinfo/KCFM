@@ -2,7 +2,7 @@
 
 ## Overview
 KCFM is a novel framework that integrates biological knowledge from cell ontologies with single-cell sequencing data to improve cell type classification. By combining gene expression profiles with structured biological knowledge, KCFM achieves state-of-the-art performance across multiple analysis tasks.
-![KCFM framework](./workflow.png)
+![KCFM framework](./workflow.svg)
 
 ## Quick Start
 ```bash
