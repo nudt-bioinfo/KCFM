@@ -1,53 +1,27 @@
-#会有改动
-import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import Sequential, Linear, ReLU
+import os
 import numpy as np
 from torch_geometric.nn import SGConv
-from time import time
 
-# 全局变量，可以通过参数动态设置
-pretrained_model = 'scfoundation'
-dataset = 'adamson'
-embedding_path = None  # 将在运行时设置
+pretrained_model = 'KCFM'
+dataset = 'norman'
 
-def load_embedding(pretrained_model_name='scfoundation', dataset_name='adamson', custom_embedding_path=None):
-    """
-    动态加载嵌入文件
-    
-    Args:
-        pretrained_model_name: 预训练模型名称
-        dataset_name: 数据集名称
-        custom_embedding_path: 自定义嵌入文件路径
-    """
-    global pretrained_model, dataset, embedding_path, ctrl_emb, ctrl_emb_size
-    
-    pretrained_model = pretrained_model_name
-    dataset = dataset_name
-    
-    if custom_embedding_path:
-        embedding_path = custom_embedding_path
-    else:
-            # 默认路径格式
-            embedding_path = f'/home/mjin/GEARS_Clean/embed/{pretrained_model}_{dataset}_embedding.npy'
-    
-    print(f'loading embedding from {pretrained_model} for dataset {dataset}')
-    print(f'embedding path: {embedding_path}')
-    
-    if os.path.exists(embedding_path):
-        ctrl_emb = torch.tensor(np.load(embedding_path))
-        ctrl_emb_size = ctrl_emb.shape[-1]
-        print(f'embedding shape: {ctrl_emb.shape}')
-    else:
-        print(f'Warning: embedding file not found at {embedding_path}')
-        print('Using default embedding size of 512')
-        ctrl_emb_size = 512
-        ctrl_emb = None
-
-# 默认加载
-load_embedding()
+ctrl_emb = None
+ctrl_emb_size = 512
+DEFAULT_EMB_NAME = 'embeddings/norman_embeddings_2loss.npy'
+def load_embedding(path=None):
+    global ctrl_emb, ctrl_emb_size
+    p = path or os.environ.get('KCFM_GENE_EMB_PATH', DEFAULT_EMB_NAME)
+    if not os.path.exists(p):
+        raise FileNotFoundError(
+            f'Gene embedding file not found: {p}. Generate per-gene embeddings from the '
+            'released checkpoint, or set KCFM_GENE_EMB_PATH / train.py --embedding_path.')
+    ctrl_emb = torch.tensor(np.load(p))
+    ctrl_emb_size = ctrl_emb.shape[-1]
+    print(f'loading gene embedding from {p}, shape={ctrl_emb.shape}')
 
 
 class MLP(torch.nn.Module):
@@ -103,12 +77,8 @@ class GEARS_Model(torch.nn.Module):
         self.pert_base_trans = nn.ReLU()
         self.transform = nn.ReLU()
 
-        # -------------------- 改动 A 开始：自适应输入维度 --------------------
-        # 若使用外�? per-gene embedding（model_type=='emb'），输入维度�? ctrl_emb_size�?
-        # 否则�? hidden_size（与内部/MAE/API 输出一致）�?
         in_dim_for_emb_trans_v2 = ctrl_emb_size if args.get('model_type', None) == 'emb' else self.hidden_size
         self.emb_trans_v2 = MLP([in_dim_for_emb_trans_v2, self.hidden_size, self.hidden_size], last_layer_act='ReLU')
-        # -------------------- 改动 A 结束 --------------------
 
         self.pert_fuse = MLP([hidden_size, hidden_size, hidden_size], last_layer_act='ReLU')
         
@@ -174,7 +144,7 @@ class GEARS_Model(torch.nn.Module):
             self.pretrained = True
         elif args['model_type'] == 'emb':
             from modules.encoders import MAEAutobinencoder
-            self.singlecell_model = None  # 不用任何编码�?
+            self.singlecell_model = None
             self.pretrained = True
         else:
             self.pretrained = False
@@ -206,13 +176,8 @@ class GEARS_Model(torch.nn.Module):
                     emb = emb.view(-1, self.hidden_size)
                 elif self.args['model_type'] in ['emb']:
                     x = x.reshape(num_graphs, self.num_genes+1)[:,:-1]
-                    if ctrl_emb is not None:
-                        emb = ctrl_emb[data.z.detach().cpu()].to(self.args['device'])
-                        emb = emb.view(-1, ctrl_emb_size)
-                    else:
-                        # 如果嵌入文件不存在，使用随机初始化
-                        print("Warning: Using random initialization for embeddings")
-                        emb = torch.randn(num_graphs * self.num_genes, ctrl_emb_size).to(self.args['device'])
+                    emb = ctrl_emb[data.z.detach().cpu()].to(self.args['device'])
+                    emb = emb.view(-1, ctrl_emb_size)
                     pos_emb = self.emb_pos(torch.LongTensor(list(range(self.num_genes))).repeat(num_graphs, ).to(self.args['device']))
             else:
                 x = x.reshape(num_graphs, self.num_genes+1)[:,:-1]

@@ -86,9 +86,9 @@ def zip_data_download_wrapper(url, save_path, data_path):
         print_sys("Done!")  
         
 def get_go_auto(gene_list, data_path, data_name):
-    # 首先尝试在数据集特定目录中查找
+    # look in the dataset-specific dir first
     go_path = os.path.join(data_path, data_name, 'go.csv')
-    # 如果不存在，尝试在数据根目录中查找
+    # else fall back to the data root
     if not os.path.exists(go_path):
         go_path = os.path.join(data_path, 'go.csv')
     print(f"Looking for GO file at: {go_path}")

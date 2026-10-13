@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from sklearn.metrics import (accuracy_score, f1_score, 
                             classification_report, confusion_matrix)
-def load_pretrained_weights(model, pretrained_path, device,nlayers=6,fine_tune_layers=2):
+def load_pretrained_weights(model, pretrained_path, device,nlayers=6,fine_tune_layers=0):
     try:
         pretrained_dict = torch.load(pretrained_path, map_location=device)
         model_dict = model.state_dict()
@@ -37,7 +37,7 @@ def load_pretrained_weights(model, pretrained_path, device,nlayers=6,fine_tune_l
                               mode="fan_in", nonlinearity="relu")
         if model.cls_decoder.out_layer.bias is not None:
             nn.init.zeros_(model.cls_decoder.out_layer.bias)
-        # freeze
+        
         for i in range(nlayers - fine_tune_layers):
             layer = model.mamba_encoder[i]
             for param in layer.parameters():
@@ -79,7 +79,6 @@ def train_epoch(model, train_loader, optimizer, criterion, scaler, device):
         padding_mask = batch['padding_mask'].to(device)
         cell_types = batch['celltype'].to(device)
         
-
         optimizer.zero_grad()
         with torch.cuda.amp.autocast(enabled=True):
             model_output = model(
@@ -107,6 +106,7 @@ def test_epoch(model, test_loader,device):
     model.eval()
     all_preds = []
     all_labels = []
+    all_embs=[]
     with torch.no_grad():
         pbar = tqdm(test_loader, desc="Testing")
         for batch in pbar:
@@ -116,16 +116,16 @@ def test_epoch(model, test_loader,device):
             cell_types = batch['celltype'].to(device)
             with torch.cuda.amp.autocast(enabled=True):
                 model_output = model(
-                    src=src,
-                    values=values,
-                    src_key_padding_mask=padding_mask
-                )
-            
+                src=src,
+                values=values,
+                src_key_padding_mask=padding_mask
+            )
+            cell_embeddings = model_output["cell_emb"]
             preds = torch.argmax(model_output["cls_output"], dim=1)
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(cell_types.cpu().numpy())
-    return all_preds,all_labels
-
+            all_embs.extend(cell_embeddings.cpu().numpy())
+    return all_preds,all_labels,all_embs
 def get_h5ad_files(data_dir):
     return [os.path.join(data_dir, f) for f in os.listdir(data_dir) 
             if f.endswith(".h5ad")]

@@ -1,4 +1,3 @@
-#会有改动
 from torch_geometric.data import Data
 import torch
 import numpy as np
@@ -19,10 +18,22 @@ from .utils import print_sys, zip_data_download_wrapper, dataverse_download, fil
 
 class PertData:
     
-    def __init__(self, data_path, gi_go = False, gene_path = None):
+    def __init__(self, data_path, gi_go = False, gene_path = None, cache_root = None):
         self.data_path = data_path
         if not os.path.exists(self.data_path):
-            os.mkdir(self.data_path)
+            os.mkdir(self.data_path,exist_ok=True)
+        
+        # configurable cache root
+        if cache_root is None:
+        # default keeps the original path (backward compatible)
+            self.cache_root = self.data_path
+        else:
+        # use the user-specified cache root
+            self.cache_root = cache_root
+            if not os.path.exists(self.cache_root):
+                os.makedirs(self.cache_root, exist_ok=True)    
+
+
         server_path = 'https://dataverse.harvard.edu/api/access/datafile/6153417'
         # dataverse_download(server_path, os.path.join(self.data_path, 'gene2go_all.pkl'))
         print('read',os.path.join(self.data_path, 'gene2go.pkl'))
@@ -41,7 +52,13 @@ class PertData:
     
         # gene2go = {i: gene2go[i] for i in essential_genes if i in gene2go}
 
-        self.pert_names = np.unique(list(gene2go.keys()))
+        self.pert_names = np.unique(list(gene2go.keys())) #67832  gene
+        """
+        ["'C-K-RAS" '(FM-3)' '(ppGpp)ase' '0610011B16Rik' '0610037N12Rik'
+        '0710008D09Rik' '1' '1-8D' '1-8U' '1-AGPAT 3' '1-AGPAT 6' '1-AGPAT1'
+        '1-AGPAT2' '1-AGPAT4' '1-Cys' '10-FTHFDH' '10-fTHF' '101F10.1' '101F6'
+        '104p']
+        """
         self.node_map_pert = {x: it for it, x in enumerate(self.pert_names)}
             
     def load(self, data_name = None, 
@@ -54,18 +71,29 @@ class PertData:
                 url = 'https://dataverse.harvard.edu/api/access/datafile/6154417'
             elif data_name == 'dixit':
                 url = 'https://dataverse.harvard.edu/api/access/datafile/6154416'
-            data_path = os.path.join(self.data_path, data_name)
-            print('downloading data')
-            zip_data_download_wrapper(url, data_path, self.data_path)            
-            self.dataset_name = data_path.split('/')[-1]
+            # data_path = os.path.join(self.data_path, data_name)
+            # print('downloading data')
+            # zip_data_download_wrapper(url, data_path, self.data_path)            
+            # self.dataset_name = data_path.split('/')[-1]
+            # self.dataset_path = data_path
+            # adata_path = os.path.join(data_path, 'adamson.h5ad')
+            # self.adata = sc.read_h5ad(adata_path)
+            # self.adata.obs_names_make_unique()
+            
+            # use the root dir directly as the dataset path (no missing subdirs)
+            data_path = self.data_path  
+            self.dataset_name = data_name
             self.dataset_path = data_path
-            adata_path = os.path.join(data_path, 'adamson.h5ad')
+            
+            # avoid hard-coded file names
+            adata_path = os.path.join(data_path, f'{data_name}.h5ad')  
             self.adata = sc.read_h5ad(adata_path)
             self.adata.obs_names_make_unique()
 
         elif os.path.exists(data_path):
             print(data_path)
-            adata_path = os.path.join(data_path, 'adamson.h5ad') #norman
+            adata_path = os.path.join(data_path, 'norman.h5ad')
+      
             self.adata = sc.read_h5ad(adata_path)
             print(self.adata.shape)
             self.adata.obs_names_make_unique()
@@ -76,13 +104,16 @@ class PertData:
         
         print_sys('These perturbations are not in the GO graph and is thus not able to make prediction for...')
         not_in_go_pert = np.array(self.adata.obs[self.adata.obs.condition.apply(lambda x: not filter_pert_in_go(x, self.pert_names))].condition.unique())
-        print_sys(not_in_go_pert)
-        
+        print("invalid perturbations")
+        print_sys(not_in_go_pert) ###[]
         filter_go = self.adata.obs[self.adata.obs.condition.apply(lambda x: filter_pert_in_go(x, self.pert_names))]
+        print("valid perturbations")
+        print(filter_go)
         self.adata = self.adata[filter_go.index.values, :]
-        pyg_path = os.path.join(data_path, 'scfoundation/data_pyg') # scfoundation
+        # pyg_path = os.path.join(data_path, 'geneformer/data_pyg') 
+        pyg_path = os.path.join(self.cache_root, self.dataset_name, 'KCFM', 'data_pyg')
         if not os.path.exists(pyg_path):
-            os.mkdir(pyg_path)
+            os.makedirs(pyg_path, exist_ok=True)
         dataset_fname = os.path.join(pyg_path, 'cell_graphs.pkl')
                 
         if os.path.isfile(dataset_fname):
@@ -125,9 +156,10 @@ class PertData:
         
         self.ctrl_adata = self.adata[self.adata.obs['condition'] == 'ctrl']
         self.gene_names = self.adata.var.gene_name
-        pyg_path = os.path.join(save_data_folder, 'scfoundation/data_pyg') #scfoundation
+        # pyg_path = os.path.join(save_data_folder, 'geneformer/data_pyg') 
+        pyg_path = os.path.join(self.cache_root, self.dataset_name, 'KCFM', 'data_pyg')
         if not os.path.exists(pyg_path):
-            os.mkdir(pyg_path)
+            os.makedirs(pyg_path, exist_ok=True)
         dataset_fname = os.path.join(pyg_path, 'cell_graphs.pkl')
         print_sys("Creating pyg object for each cell in the data...")
         self.dataset_processed = self.create_dataset_file()
@@ -161,9 +193,10 @@ class PertData:
                     raise ValueError('Please set split_dict_path for custom split')
             return
         
-        split_folder = os.path.join(self.dataset_path, 'scfoundation/splits') #scfoundation
+        # split_folder = os.path.join(self.dataset_path, 'geneformer/splits') 
+        split_folder = os.path.join(self.cache_root, self.dataset_name, 'KCFM', 'splits')
         if not os.path.exists(split_folder):
-            os.mkdir(split_folder)
+            os.makedirs(split_folder, exist_ok=True)
         split_file = self.dataset_name + '_' + split + '_' + str(seed) + '_' + str(train_gene_set_size) + '.pkl'
         split_path = os.path.join(split_folder, split_file)
         
@@ -239,7 +272,9 @@ class PertData:
             
         self.node_map = {x: it for it, x in enumerate(self.adata.var.gene_name)}
         self.gene_names = self.adata.var.gene_name
-       
+        # print(self.node_map)
+        # print(len(self.node_map))
+        # if 'HMGA2' in self.adata.var.gene_name:
         # Create cell graphs
         cell_graphs = {}
         if self.split == 'no_split':

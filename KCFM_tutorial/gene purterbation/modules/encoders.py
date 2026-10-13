@@ -20,8 +20,9 @@ from omegaconf import MISSING, OmegaConf
 from torch import nn, Tensor
 import math
 import sys 
-sys.path.append("/home/mjin/scFoundation-main/model/") 
-from load import *
+sys.path.append("../model/") 
+#from load import *
+import load
 
 
 def next_16x(x):

@@ -67,8 +67,7 @@ class GEARS:
         self.num_perts = len(self.pert_list)
         self.saved_pred = {}
         self.saved_logvar_sum = {}
-
-        # ===== 复现性：全面固定随机数与确定性算子 =====
+        # ===== reproducibility: fixed RNG seeds and deterministic ops =====
         random.seed(self.seed)
         os.environ['PYTHONHASHSEED'] = str(self.seed)
         np.random.seed(self.seed)
@@ -79,10 +78,12 @@ class GEARS:
         torch.use_deterministic_algorithms(True)
         os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 
+        # self.ctrl_expression = torch.tensor(
+        #     np.mean(self.adata.X[self.adata.obs.condition == 'ctrl'], axis=0)
+        # ).reshape(-1, ).to(self.device)
         self.ctrl_expression = torch.tensor(
-            np.mean(self.adata.X[self.adata.obs.condition == 'ctrl'], axis=0)
+            np.mean(self.adata.X[(self.adata.obs.condition == 'ctrl').values], axis=0)
         ).reshape(-1, ).to(self.device)
-
         pert_full_id2pert = dict(self.adata.obs[['condition_name', 'condition']].values)
         if gi_predict:
             self.dict_filter = None
@@ -133,10 +134,7 @@ class GEARS:
                          finetune_method=None,
                          accumulation_steps=1,
                          mode='v1',
-                         highres=0,
-                         pretrained_model_name='scfoundation',
-                         dataset_name=None,
-                         custom_embedding_path=None
+                         highres=0
                          ):
 
         self.config = {'hidden_size': hidden_size,
@@ -169,17 +167,10 @@ class GEARS:
         print('Use accumulation steps:', accumulation_steps)
         print('Use mode:', mode)
         print('Use higres:', highres)
-        
-        # 加载嵌入文件（如果使用emb模式）
-        if model_type == 'emb':
-            from .model import load_embedding
-            if dataset_name is None:
-                dataset_name = self.dataset_name
-            load_embedding(pretrained_model_name, dataset_name, custom_embedding_path)
 
         if self.wandb:
             self.wandb.config.update(self.config)
-
+            
         if self.config['G_coexpress'] is None:
             # calculating co expression similarity graph
             edge_list = get_similarity_network(
@@ -221,6 +212,13 @@ class GEARS:
             self.config['G_go'] = sim_network.edge_index
             self.config['G_go_weight'] = sim_network.edge_weight
 
+        if self.config.get('model_type') == 'emb':
+
+            from .model import load_embedding
+
+            load_embedding()
+
+
         self.model = GEARS_Model(self.config).to(self.device)
         self.best_model = deepcopy(self.model)
 
@@ -259,8 +257,8 @@ class GEARS:
 
     def predict(self, pert_list):
         """
-        给定若干单/组合扰动，返回预测表达。
-        保留所有 replicate 的预测矩阵（不做均值），并通过tqdm显示进度。
+        Predict expression for given single/combined perturbations.
+        Keeps all replicate prediction matrices (no averaging), shows progress via tqdm.
         """
         self.ctrl_adata = self.adata[self.adata.obs['condition'] == 'ctrl']
         for pert in pert_list:
@@ -277,10 +275,10 @@ class GEARS:
         results_logvar_sum = {}
 
         from torch_geometric.data import DataLoader
-        from tqdm import tqdm  # 预测进度可视化
-        for pert in tqdm(pert_list, desc="Predicting perturbations"):  # 显示进度条
+        from tqdm import tqdm  # prediction progress bar
+        for pert in tqdm(pert_list, desc="Predicting perturbations"):  # progress bar
             try:
-                # 复用已保存的预测结果
+                # reuse saved predictions
                 results_pred['_'.join(pert)] = self.saved_pred['_'.join(pert)]
                 if self.config['uncertainty']:
                     results_logvar_sum['_'.join(pert)] = self.saved_logvar_sum['_'.join(pert)]
@@ -305,7 +303,7 @@ class GEARS:
                         p = self.best_model(batch)
                     predall.append(p.detach().cpu().numpy())
             preadall = np.concatenate(predall, axis=0)
-            results_pred['_'.join(pert)] = preadall  # 保留所有样本
+            results_pred['_'.join(pert)] = preadall  # keep all samples
 
         self.saved_pred.update(results_pred)
 
@@ -316,7 +314,7 @@ class GEARS:
             return results_pred
 
     def GI_predict(self, combo, GI_genes_file='./genes_with_hi_mean.npy'):
-        """给定基因对 combo，返回 (A, B, A+B) 的预测变化与 GI 评分。"""
+        """For a gene-pair combo, return predicted changes of (A, B, A+B) and the GI score."""
         try:
             pred = {
                 combo[0]: self.saved_pred[combo[0]],
@@ -388,17 +386,17 @@ class GEARS:
               weight_decay=5e-4
               ):
         """
-        训练流程：
-        - 使用 train_loader 训练，test_loader 作为验证集
-        - 训练后使用最佳模型在 test_loader 上进行深度测试分析和亚组分析
+        Training pipeline:
+        - train with train_loader; test_loader acts as the validation set
+        - after training, run deep test and subgroup analysis on test_loader with the best model
         """
         train_loader = self.dataloader['train_loader']
-        val_loader = self.dataloader['test_loader']  # 用test_loader作为验证集
+        val_loader = self.dataloader['test_loader']  # test_loader used as the validation set
 
         self.model = self.model.to(self.device)
         best_model = deepcopy(self.model)
 
-        # 优化器设置
+        # optimizer setup
         if self.config['finetune_method'] == 'frozen':
             for name, p in self.model.named_parameters():
                 if "singlecell_model" in name:
@@ -464,11 +462,11 @@ class GEARS:
 
             scheduler.step()
 
-            # 验证：逐扰动 + 整体指标
+            # validation: per-perturbation + overall metrics
             val_res = evaluate(val_loader, self.model, self.config['uncertainty'], self.device, self.adata)
             val_metrics, val_pert_metrics = compute_metrics(val_res, self.adata)
 
-            # 逐扰动细粒度指标
+            # per-perturbation fine-grained metrics
             log = "Pert: {} PCC: {:.4f} MSE: {:.4f} PCC_DE: {:.4f} MSE_DE: {:.4f}"
             for pert in val_pert_metrics:
                 print_sys(log.format(
@@ -479,7 +477,7 @@ class GEARS:
                     val_pert_metrics[pert]['mse_de']
                 ))
 
-            # 整体指标
+            # overall metrics
             print_sys(
                 "Overall Validation PCC: {:.4f} MSE: {:.4f} PCC_DE: {:.4f} MSE_DE: {:.4f}".format(
                     val_metrics['pearson'],
@@ -489,7 +487,7 @@ class GEARS:
                 )
             )
 
-            # 同步到wandb
+            # sync to wandb
             if self.wandb:
                 metrics = ['mse', 'pearson']
                 for m in metrics:
@@ -499,58 +497,41 @@ class GEARS:
                         'train_de_' + m: 0,
                         'val_de_' + m: val_metrics[m + '_de']
                     })
-            
-            # 保存最优模型（以差异表达基因的MSE为准）
+
+            # save best model (by DE-gene MSE)
             if val_metrics['mse_de'] < min_val:
                 min_val = val_metrics['mse_de']
                 best_model = deepcopy(self.model)
                 print_sys("Best epoch:{} mse_de:{}!".format(epoch + 1, min_val))
                 self.best_model = best_model
                 self.save_model(result_dir)
-            
-            """
-            pcc = float(val_metrics.get('pearson_de', 0.0))
-            if np.isnan(pcc):
-                pcc = -1.0
-            current = -pcc
-            if current < min_val:
-                min_val = current
-                best_model = deepcopy(self.model)
-                print_sys("Best epoch:{} by pearson_de -> r={:.4f}".format(epoch + 1, pcc))
-                self.best_model = best_model
-                self.save_model(result_dir)
-            """
+
         print_sys("Done!")
         self.best_model = best_model
 
-        # ========== 训练后：深度测试分析 + 亚组分析（同scfoundation） ==========
+        # ===== post-training: deep test analysis + subgroup analysis =====
         if 'test_loader' not in self.dataloader:
             print_sys('No test dataloader detected. Skipping test analysis.')
             return
 
-        # 加载测试集并评估
+        # load test set and evaluate
         test_loader = self.dataloader['test_loader']
         print_sys("Start testing with best model...")
         test_res = evaluate(test_loader, self.best_model, self.config['uncertainty'], self.device, self.adata)
-        # === 在这里保存 npz 文件 ===
-        save_dir = os.path.join("./results", "eval_outputs")
+
+
+        save_dir = os.environ.get("GEARS_EVAL_OUTDIR", os.path.join("results", "eval_outputs"))
         os.makedirs(save_dir, exist_ok=True)
         npz_path = os.path.join(save_dir, "eval_results.npz")
-        np.savez(
-            npz_path,
-            pred=test_res["pred"],
-            truth=test_res["truth"],
-            ctrl=test_res["ctrl"],
-            pert_cat=test_res["pert_cat"],
-            pred_de=test_res["pred_de"],
-            truth_de=test_res["truth_de"],
-            ctrl_de=test_res["ctrl_de"],
-            logvar=test_res.get("logvar", None)
-        )
+        np.savez(npz_path, pred=test_res["pred"], truth=test_res["truth"], ctrl=test_res["ctrl"], pert_cat=test_res["pert_cat"], pred_de=test_res["pred_de"], truth_de=test_res["truth_de"], ctrl_de=test_res["ctrl_de"], logvar=test_res.get("logvar", None))
         print_sys(f"[Info] Results saved to {npz_path}")
+
+
         test_metrics, test_pert_res = compute_metrics(test_res, self.adata)
+        #print_sys(f"Best model Test Top 20 DE MSE: {test_metrics['mse_de']:.4f}")
+        
         print_sys("Best model Test Top 20 DE MSE: {:.4f}, PCC: {:.4f}".format(test_metrics["mse_de"], test_metrics["pearson_de"]))
-        # 记录测试指标到wandb
+        # log test metrics to wandb
         if self.wandb:
             metrics = ['mse', 'pearson']
             for m in metrics:
@@ -559,12 +540,12 @@ class GEARS:
                     'test_de_' + m: test_metrics[m + '_de']
                 })
 
-        # 深度分析（差异表达基因预测质量、方向一致性等）
+        # deep analysis (DE-gene prediction quality, direction consistency, ...)
         print_sys("Performing deeper analysis...")
         out = deeper_analysis(self.adata, test_res)
         out_non_dropout = non_dropout_analysis(self.adata, test_res)
 
-        # 记录深度分析指标
+        # log deep-analysis metrics
         metrics = ['pearson_delta']
         metrics_non_dropout = [
             'frac_opposite_direction_top20_non_dropout',
@@ -577,8 +558,8 @@ class GEARS:
                 self.wandb.log({'test_' + m: np.mean([j[m] for i, j in out.items() if m in j])})
             for m in metrics_non_dropout:
                 self.wandb.log({'test_' + m: np.mean([j[m] for i, j in out_non_dropout.items() if m in j])})
-
-        # 亚组分析（仅针对模拟数据）
+        
+        # subgroup analysis (simulation data only)
         if self.split == 'simulation':
             print_sys("Performing subgroup analysis for simulation data...")
             subgroup = self.subgroup
@@ -591,13 +572,13 @@ class GEARS:
             for name in subgroup['test_subgroup'].keys():
                 subgroup_analysis[name] = {m: [] for m in first_metrics.keys()}
 
-            # 按亚组统计指标
+            # per-subgroup metrics
             for name, pert_list in subgroup['test_subgroup'].items():
                 for pert in pert_list:
                     for m, res in test_pert_res[pert].items():
                         subgroup_analysis[name][m].append(res)
 
-            # 计算亚组均值并记录
+            # compute and log subgroup means
             for name, result in subgroup_analysis.items():
                 for m in result.keys():
                     subgroup_analysis[name][m] = np.mean(subgroup_analysis[name][m])
@@ -605,7 +586,7 @@ class GEARS:
                         self.wandb.log({'test_' + name + '_' + m: subgroup_analysis[name][m]})
                     print_sys(f'test_{name}_{m}: {subgroup_analysis[name][m]:.4f}')
 
-            # 亚组深度分析
+            # subgroup deep analysis
             subgroup_analysis = {}
             for name in subgroup['test_subgroup'].keys():
                 subgroup_analysis[name] = {**{m: [] for m in metrics},**{m: [] for m in metrics_non_dropout}}
@@ -617,7 +598,7 @@ class GEARS:
                     for m in metrics_non_dropout:
                         subgroup_analysis[name][m].append(out_non_dropout[pert][m])
 
-            # 记录亚组深度分析指标
+            # log subgroup deep-analysis metrics
             for name, result in subgroup_analysis.items():
                 for m in result.keys():
                     subgroup_analysis[name][m] = np.mean(subgroup_analysis[name][m])

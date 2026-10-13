@@ -18,7 +18,7 @@ class BiMambaWrapper(nn.Module):
             d_model: int,
             bidirectional: bool = True,
             bidirectional_strategy: str = "add",
-            bidirectional_weight_tie: bool = True, 
+            bidirectional_weight_tie: bool = True,
             ssm_layer: str = "Mamba2",
             **mamba_kwargs
     ):
@@ -54,7 +54,13 @@ class BiMambaWrapper(nn.Module):
                 self.mamba_rev.out_proj.weight = self.mamba_fwd.out_proj.weight
                 self.mamba_rev.out_proj.bias = self.mamba_fwd.out_proj.bias
         else:
-            self.mamba_rev = None  
+            self.mamba_rev = None
+ 
+        
+        
+            
+            
+    
     def forward(self, hidden_states, src_key_padding_mask=None, inference_params=None):
         """Bidirectional-enabled forward pass with smart flipping
         
@@ -115,11 +121,9 @@ class BiMambaWrapper(nn.Module):
 class MambaModel(nn.Module):
     def __init__(
         self,
-        ntoken: int,
-        d_model: int,
-        nhead: int,         
-        d_hid: int,           
-        nlayers: int,         
+        ntoken: int=60697,
+        d_model: int=512,
+        nlayers: int=6,         # number of Mamba layers
         vocab: Any = None,
         dropout: float = 0.1,
         pad_token: str = "<pad>",
@@ -127,6 +131,7 @@ class MambaModel(nn.Module):
         input_emb_style: str = "continuous",
         n_input_bins: Optional[int] = None,
         cell_emb_style: str = "cls",
+        # Mamba parameters
         bidirectional: bool = True,
         bidirectional_strategy: str = "add",
         bidirectional_weight_tie: bool = True,
@@ -140,11 +145,23 @@ class MambaModel(nn.Module):
         self.class_num=class_num
         self.encoder = GeneEncoder(ntoken, d_model, padding_idx=60694)
         
-
-        self.value_encoder = ContinuousValueEncoder(d_model, dropout)
+        if input_emb_style == "continuous":
+            self.value_encoder = ContinuousValueEncoder(d_model, dropout)
+        elif input_emb_style == "category":
+            assert n_input_bins > 0
+            self.value_encoder = CategoryValueEncoder(
+                n_input_bins, d_model, padding_idx=pad_value
+            )
+        else:
+            self.value_encoder = nn.Identity()
         self.cls_decoder = ClsDecoder(d_model, n_cls=class_num,nlayers=3)
         self.decoder = ExprDecoder(d_model)
         self.creterion_cce = nn.CrossEntropyLoss()
+        
+        
+   
+
+        
         self.mamba_encoder = nn.ModuleList(
             [BiMambaWrapper(
                 d_model=d_model,
@@ -159,12 +176,12 @@ class MambaModel(nn.Module):
     def _encode(self, src: Tensor, values: Tensor, src_key_padding_mask: Tensor) -> Tensor:
         src = self.encoder(src)
         values = self.value_encoder(values)
-        total_embs = src + values  
+        total_embs = src + values  # fuse gene and value embeddings
         
         if src_key_padding_mask is not None:
             total_embs = total_embs * (~src_key_padding_mask).unsqueeze(-1)
         
-    
+        # call each BiMambaWrapper forward manually
         for layer in self.mamba_encoder:
             total_embs = layer(total_embs, src_key_padding_mask=src_key_padding_mask)
         
@@ -180,7 +197,7 @@ class MambaModel(nn.Module):
             cell_emb = torch.sum(layer_output * weights.unsqueeze(2), dim=1)
             cell_emb = F.normalize(cell_emb, p=2, dim=1)
         elif self.cell_emb_style == "all-genes":
-            cell_emb = layer_output[:, 1:, :] 
+            cell_emb = layer_output[:, 1:, :] # return the full layer output
         return cell_emb
 
     def forward(self, src: Tensor, values: Tensor, src_key_padding_mask: Tensor) -> Mapping[str, Tensor]:
@@ -232,13 +249,34 @@ class ContinuousValueEncoder(nn.Module):
         Args:
             x: Tensor, shape [batch_size, seq_len]
         """
+        # TODO: test using actual embedding layer if input is categorical
+        # expand last dimension
         x = x.unsqueeze(-1)
+        # clip x to [-inf, max_value]
         x = torch.clamp(x, max=self.max_value)
         x = self.activation(self.linear1(x))
         x = self.linear2(x)
         x = self.norm(x)
         return self.dropout(x)
 
+class CategoryValueEncoder(nn.Module):
+    def __init__(
+        self,
+        num_embeddings: int,
+        embedding_dim: int,
+        padding_idx: Optional[int] = None,
+    ):
+        super().__init__()
+        self.embedding = nn.Embedding(
+            num_embeddings, embedding_dim, padding_idx=padding_idx
+        )
+        self.enc_norm = nn.LayerNorm(embedding_dim)
+
+    def forward(self, x: Tensor) -> Tensor:
+        x = x.long()
+        x = self.embedding(x)  # (batch, seq_len, embsize)
+        x = self.enc_norm(x)
+        return x
 
 class ExprDecoder(nn.Module):
     def __init__(
